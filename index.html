@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Para Carla 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --pink:#ff6b9d;
+  --rose:#e8446f;
+  --purple:#c471ed;
+  --gold:#f7c948;
+  --deep:#0d0d1f;
+  --navy:#131326;
+  --mid:#1a1a35;
+  --glass:rgba(255,255,255,0.07);
+  --border:rgba(255,107,157,0.25);
+}
+
+html,body{
+  width:100%;height:100%;
+  background:var(--deep);
+  color:#fff;
+  font-family:'Lato',sans-serif;
+  overflow:hidden;
+}
+
+/* ─── CANVAS DE PARTÍCULAS ─────────────────────────── */
+#particles-canvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;
+}
+
+/* ─── BARRA DE PROGRESO ────────────────────────────── */
+#progress{
+  position:fixed;top:0;left:0;height:3px;
+  background:linear-gradient(90deg,var(--rose),var(--purple),var(--gold));
+  width:0%;transition:width .6s ease;z-index:999;
+  box-shadow:0 0 12px rgba(255,107,157,0.7);
+}
+
+/* ─── SISTEMA DE PANTALLAS ─────────────────────────── */
+.screen{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 20px;
+  opacity:0;transform:translateX(100%);
+  transition:opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;z-index:1;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+.screen.active{opacity:1;transform:translateX(0);pointer-events:all}
+.screen.exit{opacity:0;transform:translateX(-100%)}
+
+/* ─── COMPONENTES GLOBALES ─────────────────────────── */
+.playfair{font-family:'Playfair Display',serif}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--rose),var(--purple));
+  border:none;border-radius:50px;padding:14px 32px;
+  color:#fff;font-family:'Lato',sans-serif;font-size:16px;font-weight:700;
+  cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 4px 24px rgba(232,68,111,.4);
+  transition:transform .2s,box-shadow .2s;
+  -webkit-appearance:none;
+}
+.btn:active{transform:scale(.96)}
+.btn:hover{box-shadow:0 6px 32px rgba(232,68,111,.6)}
+
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:22px 20px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  width:100%;max-width:380px;
+}
+
+.gradient-text{
+  background:linear-gradient(135deg,#ff8fb3,var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.glow-border{
+  box-shadow:0 0 0 1px rgba(255,107,157,.4), 0 0 30px rgba(255,107,157,.15);
+}
+
+/* ─── PANTALLA 0: CONTRASEÑA ──────────────────────── */
+#s0{background:radial-gradient(ellipse at 50% 0%,#2a0a1e 0%,var(--deep) 70%)}
+
+.lock-wrap{
+  font-size:64px;margin-bottom:16px;
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+.pw-title{
+  font-family:'Playfair Display',serif;
+  font-size:28px;text-align:center;margin-bottom:6px;
+  color:#fff;
+}
+.pw-sub{
+  font-size:14px;color:rgba(255,255,255,.5);
+  text-align:center;margin-bottom:32px;font-weight:300;
+}
+.pw-input{
+  background:rgba(255,255,255,.08);
+  border:1.5px solid var(--border);border-radius:50px;
+  padding:14px 24px;color:#fff;font-size:17px;
+  text-align:center;width:100%;max-width:300px;
+  outline:none;font-family:'Lato',sans-serif;
+  transition:border-color .3s;letter-spacing:3px;
+  -webkit-appearance:none;
+}
+.pw-input:focus{border-color:var(--pink)}
+.pw-input::placeholder{letter-spacing:0;color:rgba(255,255,255,.35);font-size:14px}
+.pw-error{
+  color:#ff6b6b;font-size:13px;margin-top:12px;
+  opacity:0;transition:opacity .3s;text-align:center;
+}
+.pw-error.show{opacity:1}
+
+/* ─── PANTALLA 1: BIENVENIDA ──────────────────────── */
+#s1{justify-content:flex-start;padding-top:40px}
+
+.welcome-inner{
+  width:100%;max-width:400px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
+}
+
+.cake-emoji{
+  font-size:72px;
+  animation:bounce 1.2s ease-in-out infinite alternate;
+  margin-bottom:12px;
+}
+@keyframes bounce{from{transform:translateY(0) scale(1)}to{transform:translateY(-14px) scale(1.05)}}
+
+.big-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(26px,8vw,36px);
+  text-align:center;line-height:1.2;
+  margin-bottom:8px;
+}
+.big-sub{
+  font-size:15px;color:rgba(255,255,255,.65);
+  text-align:center;line-height:1.6;margin-bottom:28px;
+  font-weight:300;
+}
+
+.fact-grid{display:flex;flex-direction:column;gap:12px;width:100%;margin-bottom:20px}
+
+.fact-item{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:18px;padding:16px 18px;
+  animation:fadein .5s ease both;
+}
+.fact-item:nth-child(1){animation-delay:.1s}
+.fact-item:nth-child(2){animation-delay:.25s}
+.fact-item:nth-child(3){animation-delay:.4s}
+.fact-item:nth-child(4){animation-delay:.55s}
+@keyframes fadein{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.fact-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+.fact-body strong{color:#fff;font-size:14px;display:block;margin-bottom:3px}
+.fact-body span{color:rgba(255,255,255,.6);font-size:13px;line-height:1.5;font-weight:300}
+
+.wedding-card{
+  width:100%;
+  background:linear-gradient(135deg,rgba(247,201,72,.12),rgba(255,107,157,.12));
+  border:1.5px solid rgba(247,201,72,.4);
+  border-radius:20px;padding:20px;text-align:center;
+  margin-bottom:24px;
+  animation:fadein .5s ease .7s both;
+}
+.wedding-days{
+  font-family:'Playfair Display',serif;
+  font-size:52px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  display:block;line-height:1;
+}
+.wedding-label{font-size:13px;color:rgba(255,255,255,.55);margin-top:6px;line-height:1.5}
+
+/* ─── PANTALLAS DE MENSAJES ───────────────────────── */
+.msgs-inner{
+  width:100%;max-width:400px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+.section-header{text-align:center;margin-bottom:8px}
+.section-header .icon{font-size:44px;margin-bottom:8px}
+.section-header h2{
+  font-family:'Playfair Display',serif;font-size:26px;
+  margin-bottom:4px;
+}
+.section-header p{font-size:14px;color:rgba(255,255,255,.5);font-weight:300}
+
+.msg-card{
+  width:100%;
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:22px;padding:20px 22px;
+  position:relative;overflow:hidden;
+  animation:fadein .5s ease both;
+}
+.msg-card::after{
+  content:'';position:absolute;top:-40%;right:-40%;
+  width:80%;height:80%;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,157,.08),transparent 70%);
+  pointer-events:none;
+}
+.msg-icon{font-size:20px;margin-bottom:8px;display:block}
+.msg-text{
+  font-family:'Playfair Display',serif;
+  font-style:italic;font-size:15px;line-height:1.75;
+  color:rgba(255,255,255,.88);
+}
+
+/* ─── JUEGO 1: RASCA ──────────────────────────────── */
+#s-g1{background:radial-gradient(ellipse at 30% 70%,#1f0a2e 0%,var(--deep) 65%)}
+
+.game-header{text-align:center;margin-bottom:20px}
+.game-level{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
+.game-title-big{
+  font-family:'Playfair Display',serif;
+  font-size:26px;margin-bottom:6px;
+}
+.game-inst{font-size:14px;color:rgba(255,255,255,.55);line-height:1.5;font-weight:300}
+
+.scratch-wrap{
+  position:relative;width:290px;height:170px;
+  border-radius:22px;overflow:hidden;
+  margin:0 auto 20px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);
+}
+.scratch-reveal{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#1a0a2e,#0d1a3d);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;text-align:center;
+}
+.scratch-reveal .time{font-size:52px;font-weight:700;color:var(--pink);line-height:1;margin:8px 0}
+.scratch-reveal h3{font-family:'Playfair Display',serif;font-size:16px;color:rgba(255,255,255,.7)}
+.scratch-reveal p{font-size:13px;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.5}
+#scratch-cvs{position:absolute;inset:0;cursor:crosshair;touch-action:none}
+
+.scratch-pct{
+  font-size:13px;color:rgba(255,255,255,.4);
+  text-align:center;margin-bottom:16px;transition:opacity .5s;
+}
+#btn-g1-next{opacity:0;transition:opacity .5s}
+
+/* ─── JUEGO 2: MEMORIA ────────────────────────────── */
+#s-g2{background:radial-gradient(ellipse at 70% 30%,#0a1f2e 0%,var(--deep) 65%)}
+
+.mem-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:10px;margin:0 auto 16px;
+  width:min(320px, 90vw);
+}
+.m-card{
+  aspect-ratio:1;border-radius:14px;
+  cursor:pointer;perspective:600px;position:relative;
+}
+.m-inner{
+  width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform .45s ease;
+  position:relative;
+}
+.m-card.flip .m-inner{transform:rotateY(180deg)}
+.m-face,.m-back{
+  position:absolute;inset:0;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;backface-visibility:hidden;
+}
+.m-face{
+  background:linear-gradient(135deg,#3a1155,#1a2a55);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.3);font-size:20px;
+}
+.m-back{
+  background:var(--glass);border:1px solid var(--border);
+  transform:rotateY(180deg);
+}
+.m-card.matched .m-back{
+  background:linear-gradient(135deg,rgba(255,107,157,.2),rgba(196,113,237,.2));
+  border-color:var(--pink);
+  box-shadow:0 0 16px rgba(255,107,157,.3);
+}
+
+.mem-score{
+  font-size:18px;color:var(--pink);text-align:center;margin-bottom:16px;
+}
+#mem-reveal{display:none}
+
+/* ─── JUEGO 3: CORAZONES ──────────────────────────── */
+#s-g3{background:radial-gradient(ellipse at 50% 100%,#2e0a1a 0%,var(--deep) 65%)}
+
+.hearts-stats{
+  display:flex;gap:24px;justify-content:center;
+  margin-bottom:16px;
+}
+.stat-box{text-align:center}
+.stat-num{font-size:32px;font-weight:700;color:var(--pink);line-height:1}
+.stat-lbl{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px;letter-spacing:1px}
+
+.hearts-area{
+  position:relative;width:min(350px,92vw);height:280px;
+  border:1.5px solid var(--border);border-radius:24px;
+  overflow:hidden;margin:0 auto 20px;
+  background:rgba(255,255,255,.03);
+}
+.falling-heart{
+  position:absolute;font-size:36px;
+  cursor:pointer;user-select:none;
+  animation:fall linear forwards;
+  filter:drop-shadow(0 0 8px rgba(255,107,157,.6));
+  transition:opacity .15s,transform .15s;
+}
+@keyframes fall{
+  from{transform:translateY(-50px) rotate(-10deg)}
+  to{transform:translateY(300px) rotate(10deg)}
+}
+.falling-heart.hit{transform:scale(2)!important;opacity:0!important}
+
+#hearts-result{display:none}
+
+/* ─── JUEGO FINAL: PUZZLE ─────────────────────────── */
+#s-gf{background:radial-gradient(ellipse at 50% 50%,#1f1a0a 0%,var(--deep) 65%)}
+
+.puzzle-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:6px;width:252px;margin:0 auto 16px;
+}
+.p-piece{
+  width:80px;height:80px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;cursor:pointer;
+  background:var(--glass);border:1px solid var(--border);
+  transition:transform .15s,background .2s;
+  user-select:none;
+}
+.p-piece:active{transform:scale(.93)}
+.p-piece.empty{
+  background:rgba(0,0,0,.3);
+  border:2px dashed rgba(255,107,157,.2);
+  cursor:default;font-size:0;
+}
+
+.puzzle-meta{
+  display:flex;gap:20px;justify-content:center;
+  font-size:13px;color:rgba(255,255,255,.45);
+  margin-bottom:16px;
+}
+.puzzle-hint{
+  font-size:13px;color:rgba(255,255,255,.45);
+  text-align:center;min-height:20px;margin-bottom:16px;
+  transition:color .5s;
+}
+.puzzle-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn-sm{padding:10px 22px;font-size:14px}
+
+/* ─── PANTALLA FINAL ──────────────────────────────── */
+#s-end{
+  background:radial-gradient(ellipse at 50% 30%,#2a0a1a 0%,var(--deep) 70%);
+  text-align:center;
+}
+.end-inner{max-width:380px;width:100%;display:flex;flex-direction:column;align-items:center;gap:18px}
+
+.end-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(28px,9vw,38px);line-height:1.2;
+}
+.end-divider{
+  width:60px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--pink),transparent);
+  border-radius:1px;
+}
+.end-big{font-size:22px;color:rgba(255,255,255,.8);font-weight:300}
+
+/* ─── CONFETTI ─────────────────────────────────────── */
+.confetti{
+  position:fixed;pointer-events:none;z-index:2000;
+  width:10px;height:10px;border-radius:2px;
+  animation:confetti-fall linear forwards;
+}
+@keyframes confetti-fall{
+  0%{transform:translateY(-20px) rotate(0);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+/* ─── REVEAL BOX ───────────────────────────────────── */
+.reveal-box{
+  background:linear-gradient(135deg,rgba(255,107,157,.12),rgba(196,113,237,.12));
+  border:1.5px solid rgba(255,107,157,.5);
+  border-radius:22px;padding:22px 20px;width:100%;max-width:380px;
+  text-align:center;
+  box-shadow:0 0 40px rgba(255,107,157,.1);
+  animation:glowpulse 2.5s ease-in-out infinite;
+}
+@keyframes glowpulse{
+  0%,100%{box-shadow:0 0 20px rgba(255,107,157,.15)}
+  50%{box-shadow:0 0 45px rgba(255,107,157,.35)}
+}
+.reveal-box h3{
+  font-family:'Playfair Display',serif;
+  font-size:20px;color:var(--pink);margin-bottom:10px;
+}
+.reveal-box p{font-size:15px;line-height:1.7;color:rgba(255,255,255,.85)}
+
+/* ─── SCROLL HELPERS ───────────────────────────────── */
+.scroll-inner{
+  width:100%;max-width:400px;
+  overflow-y:auto;overflow-x:hidden;
+  max-height:calc(100vh - 60px);
+  padding:10px 4px 30px;
+  display:flex;flex-direction:column;
+  align-items:center;gap:14px;
+  scrollbar-width:none;
+}
+.scroll-inner::-webkit-scrollbar{display:none}
+
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+<div id="progress"></div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 0 — CONTRASEÑA
+══════════════════════════════════════════════════ -->
+<div class="screen active" id="s0">
+  <div class="lock-wrap">🔐</div>
+  <h1 class="pw-title playfair">Acceso privado</h1>
+  <p class="pw-sub">Solo para los ojos de alguien muy especial…</p>
+  <input class="pw-input" type="password" id="pw-input"
+         placeholder="Escribe la contraseña"
+         autocomplete="off" autocorrect="off" spellcheck="false">
+  <br><br>
+  <button class="btn" onclick="checkPw()">Entrar &nbsp;💕</button>
+  <p class="pw-error" id="pw-error">Contraseña incorrecta. ¡Piénsalo un poco! 😉</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 1 — BIENVENIDA Y DATOS
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s1">
+  <div class="scroll-inner" style="max-width:420px">
+    <div class="welcome-inner" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center">
+      <div class="cake-emoji">🎂</div>
+      <h1 class="big-title">
+        <span class="gradient-text">¡Feliz Cumpleaños,<br>Carla Balta!</span>
+      </h1>
+      <p class="big-sub">Bienvenida a tu pequeña aventura de cumpleaños.<br>Tienes 23 años, y no son un número cualquiera…</p>
+
+      <div class="fact-grid" style="width:100%">
+        <div class="fact-item">
+          <span class="fact-icon">🔢</span>
+          <div class="fact-body">
+            <strong>23 es un número primo</strong>
+            <span>Indivisible, único, irrepetible. Como tú.</span>
+          </div>
+        </div>
+        <div class="fact-item">
+          <span class="fact-icon">🏀</span>
+          <div class="fact-body">
+            <strong>Michael Jordan llevaba el 23</strong>
+            <span>El mejor de todos los tiempos. ¿Casualidad? Yo creo que no.</span>
+          </div>
+        </div>
+        <div class="fact-item">
+          <span class="fact-icon">🧬</span>
+          <div class="fact-body">
+            <strong>23 pares de cromosomas</strong>
+            <span>El 23 está literalmente codificado en quién eres. Hasta la biología te hizo especial.</span>
+          </div>
+        </div>
+        <div class="fact-item">
+          <span class="fact-icon">✨</span>
+          <div class="fact-body">
+            <strong>Creatividad y aventura</strong>
+            <span>En numerología, el 23 simboliza espíritu libre y grandes comienzos. Este año va a ser tuyo.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wedding-card" style="width:100%">
+        <span style="font-size:30px">💍</span>
+        <span class="wedding-days" id="wedding-days">…</span>
+        <div class="wedding-label">días para que nos casemos<br><span style="opacity:.5;font-size:11px">(No es que esté contando o algo así… 😏)</span></div>
+      </div>
+
+      <button class="btn" onclick="goTo('s-g1')">Empezar la aventura &nbsp;🎯</button>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA G1 — JUEGO 1: RASCA Y DESCUBRE
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-g1">
+  <div class="game-header">
+    <div class="game-level">Nivel 1 de 3</div>
+    <h2 class="game-title-big playfair">Rasca y descubre</h2>
+    <p class="game-inst">Frota con el dedo sobre la tarjeta<br>para revelar el primer secreto… 🤫</p>
+  </div>
+
+  <div class="scratch-wrap">
+    <div class="scratch-reveal">
+      <h3>La cita es a las</h3>
+      <div class="time">19:40</div>
+      <p>debajo de tu casa 🏠<br>Prepárate y ponte <em>muy</em> guapa ✨</p>
+    </div>
+    <canvas id="scratch-cvs" width="290" height="170"></canvas>
+  </div>
+
+  <p class="scratch-pct" id="scratch-pct">Sigue rascando…</p>
+  <button class="btn" id="btn-g1-next" onclick="goTo('s-m1')" style="opacity:0;transition:opacity .6s">
+    Siguiente pista &nbsp;💌
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA M1 — MENSAJES 1
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-m1">
+  <div class="scroll-inner">
+    <div class="section-header">
+      <div class="icon">💌</div>
+      <h2 class="playfair gradient-text">Para ti</h2>
+      <p>Cosas que llevo tiempo queriendo decirte</p>
+    </div>
+
+    <div class="msg-card" style="animation-delay:.1s">
+      <span class="msg-icon">💫</span>
+      <p class="msg-text">"Me siento la persona más afortunada del mundo. Cada día que pasa me doy más cuenta de lo que tengo, y no sé cómo he podido merecer tanto."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.2s">
+      <span class="msg-icon">🌙</span>
+      <p class="msg-text">"Sueño muchísimo con nuestro futuro. Me imagino cada momento y se me escapa una sonrisa que no puedo evitar."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.3s">
+      <span class="msg-icon">🪑</span>
+      <p class="msg-text">"El día que te vi sentada en ese banco frente a la universidad… ya supe que ibas a ser la mujer de mi vida. Desde entonces solo estuve esperando a que tú también te decidieras por mí. (Tardaste un poco, pero llegaste. Y valió cada segundo. 😏)"</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.4s">
+      <span class="msg-icon">🦋</span>
+      <p class="msg-text">"Eres una mujer increíble. Y necesito que empieces a creer en ti misma tanto como creo yo en ti. Porque lo que hay ahí dentro es verdaderamente enorme."</p>
+    </div>
+
+    <button class="btn" onclick="goTo('s-g2')">Siguiente prueba &nbsp;🎯</button>
+    <div style="height:10px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA G2 — JUEGO 2: MEMORY
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-g2">
+  <div class="game-header">
+    <div class="game-level">Nivel 2 de 3</div>
+    <h2 class="game-title-big playfair">Encuentra las parejas</h2>
+    <p class="game-inst">Empareja todas las cartas para descubrir<br>el plan de esta noche 🌙</p>
+  </div>
+
+  <div class="mem-grid" id="mem-grid"></div>
+  <div class="mem-score" id="mem-score">Parejas: 0 / 6</div>
+
+  <div id="mem-reveal" style="display:none;width:100%;max-width:380px;display:none">
+    <div class="reveal-box" style="margin-bottom:16px">
+      <h3>🍽️ Esta noche…</h3>
+      <p>Vamos a cenar a un <strong>restaurante de tapas</strong> 🥘<br><br>Porque últimamente estás muy de tapas… y a mí me parece el plan perfecto para empezar tu noche de cumpleaños. 🥂</p>
+    </div>
+    <div style="text-align:center">
+      <button class="btn" onclick="goTo('s-m2')">Siguiente sorpresa &nbsp;💌</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA M2 — MENSAJES 2
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-m2">
+  <div class="scroll-inner">
+    <div class="section-header">
+      <div class="icon">🌹</div>
+      <h2 class="playfair gradient-text">Más cosas</h2>
+      <p>que necesito que sepas</p>
+    </div>
+
+    <div class="msg-card" style="animation-delay:.1s">
+      <span class="msg-icon">😍</span>
+      <p class="msg-text">"Eres preciosa. Tu sonrisa es de las cosas más bonitas que he visto en mi vida. Cuando sonríes, todo lo demás desaparece."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.2s">
+      <span class="msg-icon">👀</span>
+      <p class="msg-text">"Me encanta tu mirada. Y la forma en la que eres capaz de transmitir tanto con solo hablar. Hay personas que tienen ese don especial, y tú lo tienes a raudales."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.3s">
+      <span class="msg-icon">🌸</span>
+      <p class="msg-text">"La primera colonia que te regalé era floral porque las flores me recuerdan a ti. Dondequiera que están, son preciosas. Nunca sobran, siempre suman. Exactamente igual que tú."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.4s">
+      <span class="msg-icon">🤝</span>
+      <p class="msg-text">"Darte la mano es lo más bonito que he sentido nunca. Y tus abrazos apagan la peor de las tormentas. No sé qué haría en esta vida sin ti."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.5s">
+      <span class="msg-icon">🎤</span>
+      <p class="msg-text">"Me encanta tu acento y la manera en la que hablas. Cómo dices las cosas, que suena a hogar."</p>
+    </div>
+
+    <button class="btn" onclick="goTo('s-g3')">¡Queda lo mejor! &nbsp;🎁</button>
+    <div style="height:10px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA G3 — JUEGO 3: ATRAPA CORAZONES
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-g3">
+  <div class="game-header">
+    <div class="game-level">Nivel 3 de 3</div>
+    <h2 class="game-title-big playfair">Atrapa los corazones</h2>
+    <p class="game-inst">Toca todos los que puedas en 15 segundos ❤️<br>Necesitas al menos 15 para descubrir el último secreto</p>
+  </div>
+
+  <div class="hearts-stats">
+    <div class="stat-box">
+      <div class="stat-num" id="h-score">0</div>
+      <div class="stat-lbl">CORAZONES</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="h-timer">15</div>
+      <div class="stat-lbl">SEGUNDOS</div>
+    </div>
+  </div>
+
+  <div class="hearts-area" id="hearts-area"></div>
+
+  <button class="btn" id="btn-hearts-start" onclick="startHearts()">¡Empezar! &nbsp;💪</button>
+
+  <div id="hearts-result" style="display:none;width:100%;max-width:380px;text-align:center">
+    <div class="reveal-box" style="margin-bottom:16px">
+      <h3>🏠 Después de cenar…</h3>
+      <p>Iremos a tu casa… y allí te espera algo <strong>muy muy especial</strong> que he preparado con toda mi ilusión. 🎁<br><br>Algo que solo tú mereces.<br>Algo hecho con el corazón.</p>
+    </div>
+    <button class="btn" onclick="goTo('s-m3')">Último mensaje… &nbsp;💌</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA M3 — MENSAJES 3
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-m3">
+  <div class="scroll-inner">
+    <div class="section-header">
+      <div class="icon">🫀</div>
+      <h2 class="playfair gradient-text">Lo más importante</h2>
+      <p>de todo lo que quiero decirte hoy</p>
+    </div>
+
+    <div class="msg-card" style="animation-delay:.1s">
+      <span class="msg-icon">💪</span>
+      <p class="msg-text">"Sé que te estás esforzando muchísimo en la universidad. Quiero que confíes en que todo va a salir bien. Porque lo va a hacer. Y porque te lo mereces más que nadie."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.2s">
+      <span class="msg-icon">🏆</span>
+      <p class="msg-text">"Yo, y toda tu familia, estamos increíblemente orgullosos de todo lo que estás haciendo y consiguiendo. Eres una mujer gigante. Mucho más de lo que crees."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.3s">
+      <span class="msg-icon">❤️‍🔥</span>
+      <p class="msg-text">"No sabía que se podía llegar a querer tanto a alguien hasta que lo he vivido contigo. Eso no tiene precio."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.35s">
+      <span class="msg-icon">🌍</span>
+      <p class="msg-text">"Contigo me siento preparado para todo. Sin ti, para nada. Eres mi fuerza, mi calma y mi lugar favorito en el mundo."</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.4s">
+      <span class="msg-icon">🥊</span>
+      <p class="msg-text">"Tenemos que luchar todos los días de la vida… para aprender a querernos todos los días de la vida. (Y aunque a veces también nos saquemos un poco de quicio el uno al otro, lo estamos haciendo muy bien. 😂)"</p>
+    </div>
+    <div class="msg-card" style="animation-delay:.45s">
+      <span class="msg-icon">👶</span>
+      <p class="msg-text">"Gracias por dejarme llamar Nicostrato a nuestro hijo. Sé que en el fondo te encanta. No hay marcha atrás. 😂"</p>
+    </div>
+
+    <button class="btn" onclick="goTo('s-gf')">¿Y el regalo? &nbsp;🎁</button>
+    <div style="height:10px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA GF — JUEGO FINAL: PUZZLE IMPOSIBLE
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-gf">
+  <div class="game-header">
+    <div class="game-level">Reto Final</div>
+    <h2 class="game-title-big playfair">¿Adivinas qué es el regalo?</h2>
+    <p class="game-inst">Ordena las piezas para descubrirlo… 🤔<br><span style="opacity:.5;font-size:12px">(Suena fácil, ¿verdad? 😈)</span></p>
+  </div>
+
+  <div class="puzzle-grid" id="puzzle-grid"></div>
+
+  <div class="puzzle-meta">
+    <span>Intentos: <strong id="p-attempts">0</strong></span>
+    <span>Movimientos: <strong id="p-moves">0</strong></span>
+  </div>
+  <div class="puzzle-hint" id="p-hint"></div>
+
+  <div class="puzzle-btns">
+    <button class="btn btn-sm" onclick="shufflePuzzle()">Barajar &nbsp;🔀</button>
+    <button class="btn btn-sm" id="btn-giveup"
+            style="background:linear-gradient(135deg,#444,#666)"
+            onclick="finalReveal()">Me rindo… &nbsp;🏳️</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA FINAL
+══════════════════════════════════════════════════ -->
+<div class="screen" id="s-end">
+  <div class="end-inner">
+    <div style="font-size:64px;animation:float 3s ease-in-out infinite">🎁</div>
+
+    <h1 class="end-title playfair">
+      <span class="gradient-text">Esta noche<br>lo descubres</span>
+    </h1>
+    <div class="end-divider"></div>
+
+    <div class="reveal-box">
+      <h3>💕 Te lo he preparado con toda mi ilusión</h3>
+      <p>He pensado en ti en cada detalle. Porque te mereces el mundo. Y aunque no puedo darte el mundo entero, quiero que sientas que lo intento cada día.</p>
+    </div>
+
+    <div class="msg-card" style="text-align:center">
+      <span class="msg-icon">💍</span>
+      <p class="msg-text">"No sabes las veces que he imaginado cada momento de nuestro futuro. Y en cada uno de ellos, estás tú. Siempre estás tú."</p>
+    </div>
+
+    <div class="end-divider"></div>
+    <div class="end-big">¡Feliz cumpleaños, mi amor! 🎂🥂</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.5);font-weight:300">Te quiero muchísimo. 💕</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const PASSWORD   = "nicostrato";        // ← cambia si quieres
+const WEDDING    = new Date("2030-08-15"); // ← cambia al día exacto cuando lo sepas
+
+// ─── ESTADO ───────────────────────────────────────
+const SCREENS = ['s0','s1','s-g1','s-m1','s-g2','s-m2','s-g3','s-m3','s-gf','s-end'];
+let current = 's0';
+
+// ─── NAVEGACIÓN ───────────────────────────────────
+function goTo(id){
+  const from = document.getElementById(current);
+  const to   = document.getElementById(id);
+  from.classList.add('exit');
+  setTimeout(()=>{ from.classList.remove('active','exit'); },560);
+  setTimeout(()=>{ to.classList.add('active'); },200);
+  current = id;
+  // progress
+  const idx = SCREENS.indexOf(id);
+  document.getElementById('progress').style.width = (idx/(SCREENS.length-1)*100)+'%';
+  // scroll to top
+  setTimeout(()=>{ to.scrollTop=0; const si=to.querySelector('.scroll-inner'); if(si)si.scrollTop=0; },300);
+  // init
+  if(id==='s1')    initWelcome();
+  if(id==='s-g1')  initScratch();
+  if(id==='s-g2')  initMemory();
+  if(id==='s-g3')  resetHearts();
+  if(id==='s-gf')  initPuzzle();
+  if(id==='s-end') celebrate();
+}
+
+// ─── PARTÍCULAS ───────────────────────────────────
+(function(){
+  const cv=document.getElementById('particles-canvas');
+  const cx=cv.getContext('2d');
+  function resize(){ cv.width=innerWidth; cv.height=innerHeight; }
+  addEventListener('resize',resize); resize();
+  const pts=Array.from({length:55},()=>({
+    x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+    r:Math.random()*1.4+.4,
+    vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+    a:Math.random()
+  }));
+  function draw(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=cv.width; if(p.x>cv.width)p.x=0;
+      if(p.y<0)p.y=cv.height; if(p.y>cv.height)p.y=0;
+      p.a+=.005; if(p.a>1)p.a=0;
+      cx.beginPath();
+      cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(255,180,210,${.15+Math.sin(p.a*Math.PI)*.25})`;
+      cx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── CONTRASEÑA ───────────────────────────────────
+document.getElementById('pw-input').addEventListener('keypress',e=>{ if(e.key==='Enter') checkPw(); });
+function checkPw(){
+  const v=document.getElementById('pw-input').value.trim().toLowerCase();
+  if(v===PASSWORD){ goTo('s1'); }
+  else{
+    const err=document.getElementById('pw-error');
+    err.classList.add('show');
+    document.getElementById('pw-input').style.borderColor='#ff6b6b';
+    setTimeout(()=>{ err.classList.remove('show'); document.getElementById('pw-input').style.borderColor=''; },3500);
+  }
+}
+
+// ─── BIENVENIDA ───────────────────────────────────
+function initWelcome(){
+  const days = Math.ceil((WEDDING - new Date())/(86400000));
+  document.getElementById('wedding-days').textContent = days.toLocaleString('es-ES');
+}
+
+// ─── JUEGO 1: RASCA ───────────────────────────────
+function initScratch(){
+  const cv=document.getElementById('scratch-cvs');
+  const cx=cv.getContext('2d');
+  cv.width=290; cv.height=170;
+
+  // Fondo plateado rasca
+  const g=cx.createLinearGradient(0,0,290,170);
+  g.addColorStop(0,'#b0b0b0'); g.addColorStop(.5,'#e0e0e0'); g.addColorStop(1,'#909090');
+  cx.fillStyle=g; cx.fillRect(0,0,290,170);
+
+  // Textura puntitos
+  for(let i=0;i<40;i++){
+    cx.beginPath();
+    cx.arc(Math.random()*290,Math.random()*170,Math.random()*6+1,0,Math.PI*2);
+    cx.fillStyle='rgba(160,160,160,0.4)'; cx.fill();
+  }
+  // Texto
+  cx.fillStyle='rgba(100,100,100,0.8)';
+  cx.font='bold 15px Lato,sans-serif'; cx.textAlign='center';
+  cx.fillText('✨  Frota aquí con el dedo  ✨',145,92);
+
+  cx.globalCompositeOperation='destination-out';
+  let scratching=false;
+  let revealed=false;
+
+  function pos(e){
+    const r=cv.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return { x:(src.clientX-r.left)*(cv.width/r.width), y:(src.clientY-r.top)*(cv.height/r.height) };
+  }
+  function scratch(e){
+    e.preventDefault();
+    if(!scratching)return;
+    const {x,y}=pos(e);
+    cx.beginPath(); cx.arc(x,y,24,0,Math.PI*2); cx.fill();
+    if(!revealed) checkReveal();
+  }
+  function checkReveal(){
+    const d=cx.getImageData(0,0,cv.width,cv.height).data;
+    let t=0;
+    for(let i=3;i<d.length;i+=4) if(d[i]===0)t++;
+    const pct=t/(cv.width*cv.height)*100;
+    document.getElementById('scratch-pct').textContent = pct<50 ? `${Math.round(pct)}% rascado…` : '¡Lo has conseguido! 🎉';
+    if(pct>55){
+      revealed=true;
+      cx.clearRect(0,0,cv.width,cv.height);
+      document.getElementById('scratch-pct').style.opacity='0';
+      document.getElementById('btn-g1-next').style.opacity='1';
+    }
+  }
+  cv.addEventListener('mousedown', e=>{ scratching=true; scratch(e); });
+  cv.addEventListener('mousemove', scratch);
+  cv.addEventListener('mouseup',   ()=> scratching=false);
+  cv.addEventListener('touchstart', e=>{ scratching=true; scratch(e); },{passive:false});
+  cv.addEventListener('touchmove',  scratch,{passive:false});
+  cv.addEventListener('touchend',   ()=> scratching=false);
+}
+
+// ─── JUEGO 2: MEMORIA ─────────────────────────────
+const MEM_EMOJIS = ['🌹','💕','🥂','🌙','✨','🎂'];
+let mFlipped=[], mMatched=0, mLocked=false;
+
+function initMemory(){
+  mFlipped=[]; mMatched=0; mLocked=false;
+  document.getElementById('mem-score').textContent='Parejas: 0 / 6';
+  document.getElementById('mem-reveal').style.display='none';
+  const pairs=[...MEM_EMOJIS,...MEM_EMOJIS];
+  for(let i=pairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pairs[i],pairs[j]]=[pairs[j],pairs[i]];}
+  const grid=document.getElementById('mem-grid');
+  grid.innerHTML='';
+  pairs.forEach((em,i)=>{
+    const c=document.createElement('div'); c.className='m-card'; c.dataset.em=em;
+    c.innerHTML=`<div class="m-inner"><div class="m-face">💫</div><div class="m-back">${em}</div></div>`;
+    c.addEventListener('click',()=>flipMem(c));
+    grid.appendChild(c);
+  });
+}
+function flipMem(c){
+  if(mLocked||c.classList.contains('flip')||c.classList.contains('matched'))return;
+  if(mFlipped.length>=2)return;
+  c.classList.add('flip'); mFlipped.push(c);
+  if(mFlipped.length===2){
+    mLocked=true;
+    setTimeout(()=>{
+      const [a,b]=mFlipped;
+      if(a.dataset.em===b.dataset.em){
+        a.classList.add('matched'); b.classList.add('matched'); mMatched++;
+        document.getElementById('mem-score').textContent=`Parejas: ${mMatched} / 6`;
+        if(mMatched===6) setTimeout(()=>{ document.getElementById('mem-reveal').style.display='block'; },500);
+      } else {
+        a.classList.remove('flip'); b.classList.remove('flip');
+      }
+      mFlipped=[]; mLocked=false;
+    },900);
+  }
+}
+
+// ─── JUEGO 3: CORAZONES ───────────────────────────
+let hTimer=null, hSpawn=null, hScore=0, hRunning=false;
+function resetHearts(){
+  clearInterval(hTimer); clearInterval(hSpawn);
+  hScore=0; hRunning=false;
+  document.getElementById('h-score').textContent='0';
+  document.getElementById('h-timer').textContent='15';
+  document.getElementById('btn-hearts-start').style.display='';
+  document.getElementById('hearts-result').style.display='none';
+  document.getElementById('hearts-area').innerHTML='';
+}
+function startHearts(){
+  document.getElementById('btn-hearts-start').style.display='none';
+  hRunning=true; let t=15;
+  hSpawn=setInterval(spawnHeart,700);
+  hTimer=setInterval(()=>{
+    t--; document.getElementById('h-timer').textContent=t;
+    if(t<=0){
+      clearInterval(hTimer); clearInterval(hSpawn); hRunning=false;
+      document.getElementById('hearts-area').innerHTML='';
+      setTimeout(()=>{ document.getElementById('hearts-result').style.display='block'; },800);
+    }
+  },1000);
+}
+function spawnHeart(){
+  if(!hRunning)return;
+  const area=document.getElementById('hearts-area');
+  const h=document.createElement('div'); h.className='falling-heart';
+  const emojis=['❤️','💕','💖','💗','💝'];
+  h.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  h.style.left=Math.random()*82+'%';
+  const dur=1.8+Math.random()*1.6;
+  h.style.animationDuration=dur+'s';
+  h.addEventListener('click',()=>{
+    if(!hRunning)return;
+    h.classList.add('hit');
+    hScore++; document.getElementById('h-score').textContent=hScore;
+    setTimeout(()=>h.remove(),200);
+  });
+  area.appendChild(h);
+  setTimeout(()=>{ if(h.parentNode)h.remove(); },dur*1000+100);
+}
+
+// ─── JUEGO FINAL: PUZZLE ──────────────────────────
+const PUZZLE_ICONS=['🌸','💕','🎁','🌙','✨','🥂','💍','🎂'];
+let pState=[], pMoves=0, pAttempts=0;
+
+function initPuzzle(){
+  pMoves=0; pAttempts=0;
+  document.getElementById('p-attempts').textContent='0';
+  document.getElementById('p-moves').textContent='0';
+  document.getElementById('p-hint').textContent='';
+  // build solved state: 0-7 = icons, 8 = empty
+  pState=[0,1,2,3,4,5,6,7,8];
+  shufflePuzzle();
+}
+function shufflePuzzle(){
+  let ei=pState.indexOf(8);
+  for(let i=0;i<80;i++){
+    const nb=getNeighbors(ei);
+    const n=nb[Math.floor(Math.random()*nb.length)];
+    [pState[ei],pState[n]]=[pState[n],pState[ei]];
+    ei=n;
+  }
+  renderPuzzle();
+}
+function getNeighbors(i){
+  const nb=[], r=Math.floor(i/3), c=i%3;
+  if(r>0)nb.push(i-3); if(r<2)nb.push(i+3);
+  if(c>0)nb.push(i-1); if(c<2)nb.push(i+1);
+  return nb;
+}
+function renderPuzzle(){
+  const grid=document.getElementById('puzzle-grid');
+  grid.innerHTML='';
+  pState.forEach((v,i)=>{
+    const p=document.createElement('div');
+    if(v===8){ p.className='p-piece empty'; }
+    else{
+      p.className='p-piece'; p.textContent=PUZZLE_ICONS[v];
+      p.addEventListener('click',()=>movePiece(i));
+    }
+    grid.appendChild(p);
+  });
+}
+function movePiece(i){
+  const ei=pState.indexOf(8);
+  if(!getNeighbors(ei).includes(i))return;
+  [pState[ei],pState[i]]=[pState[i],pState[ei]];
+  pMoves++; pAttempts++;
+  document.getElementById('p-moves').textContent=pMoves;
+  document.getElementById('p-attempts').textContent=pAttempts;
+  renderPuzzle();
+
+  // hints progresivos
+  const hint=document.getElementById('p-hint');
+  if(pAttempts===6)  hint.textContent='💭 Hmm… bastante difícil, ¿verdad? 😏';
+  if(pAttempts===12) hint.textContent='🤔 Parece que no va a haber manera… 😈';
+  if(pAttempts===18){
+    hint.textContent='😅 Quizás tendrás que verlo en persona esta noche…';
+    hint.style.color=getComputedStyle(document.documentElement).getPropertyValue('--pink');
+    document.getElementById('btn-giveup').style.background='linear-gradient(135deg,var(--rose),var(--purple))';
+    document.getElementById('btn-giveup').textContent='¡Descúbrelo esta noche! 🎁';
+  }
+  // si resuelto (raro pero posible)
+  if(pState.every((v,i)=>v===i)) finalReveal();
+}
+function finalReveal(){ goTo('s-end'); }
+
+// ─── CONFETTI ─────────────────────────────────────
+function celebrate(){
+  const colors=['#ff6b9d','#c471ed','#f7c948','#ff4d88','#fff','#a3f7bf'];
+  for(let i=0;i<80;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div'); c.className='confetti';
+      c.style.cssText=`left:${Math.random()*100}vw;top:-15px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
+        border-radius:${Math.random()>.5?'50%':'3px'};
+        animation-duration:${2.5+Math.random()*2.5}s;
+        animation-delay:0s;`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),5500);
+    }, i*55);
+  }
+}
+</script>
+</body>
+</html>
